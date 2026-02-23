@@ -83,4 +83,14 @@ router.post("/collection/add", async (req, res) => {
   }
 });
 
+router.get('/collcetion/view', async (req, res) => {
+    try{
+        const myCard = await req.db.all('SELECT * FROM my_collection ORDER BY card_id ASC');
+        res.json(myCard);
+    } catch (error) {
+        console.error("Datadbase error:", error);
+        res.status(500).json({ error: "Error during loading the collection."});
+    }
+});
+
 module.exports = router;
