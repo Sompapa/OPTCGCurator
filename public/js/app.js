@@ -1,4 +1,5 @@
   const setIdMap = {};
+  let myCollectionMap = {};
       function handleDropdownSelect(selectedValue, otherInputId) {
           const setId = setIdMap[selectedValue];
           if (setId) {
@@ -280,6 +281,78 @@
 
 
       cards.forEach(card => display.appendChild(card));
+    }
+
+    async function openDeckbuilder() {
+        document.getElementById('cards-display').style.display = 'none';
+        document.getElementById('current-set-title').style.display = 'none';
+        
+        const dbContainer = document.getElementById('deckbuilder-container');
+        dbContainer.style.display = 'block';
+        try {
+            const response = await fetch('/api/collection/check');
+            myCollectionMap = await response.json();
+            console.log("Gyűjtemény betöltve az ellenőrzéshez:", myCollectionMap);
+            const dbDisplay = document.getElementById('db-cards-display');
+            if (dbDisplay.innerHTML.trim() === "") {
+                loadCardsForDeckbuilder('OP-01'); 
+            }
+        } catch (e) {
+            console.error("Hiba a gyűjtemény ellenőrzésekor:", e);
+        }
+    }
+
+    async function loadCardsForDeckbuilder(setId) {
+        const display = document.getElementById('db-cards-display');
+        display.innerHTML = '<p style="text-align:center; width:100%;">Kártyák betöltése...</p>';
+
+        try {
+            const response = await fetch(`/api/view/${setId}`);
+            const data = await response.json();
+            display.innerHTML = '';
+
+            let cardList = Array.isArray(data) ? data : (data.cards || []);
+
+            cardList.forEach(card => {
+                const div = document.createElement('div');
+                div.className = 'card-box';
+
+                let rawName = card.card_name || card.name || "Unknown";
+                const img = card.card_image || card.image_url || card.image || "";
+                let cardNumber = card.card_number || card.card_id || card.id || "N/A";
+
+                const cleanId = setId.replace(/^(OP|ST|EB|PRB)-(\d+)/i, '$1$2').toUpperCase();
+                const idMatch = rawName.match(/\(([^)]*\d[^)]*)\)/);
+                if (idMatch && cardNumber === "N/A") cardNumber = idMatch[1];
+                let cleanName = rawName.replace(/\s*\([^)]*\d[^)]*\)/g, '').trim();
+                if (cardNumber !== "N/A") {
+                    cardNumber = cardNumber.split('_')[0].toUpperCase();
+                    cardNumber = cardNumber.replace(/^(OP|ST|EB|PRB)-(\d+)/i, '$1$2');
+                    if (!cardNumber.includes(cleanId)) cardNumber = `${cleanId}-${cardNumber.replace(/^-/, '')}`;
+                }
+
+                const isOwned = myCollectionMap[cardNumber] && myCollectionMap[cardNumber] > 0;
+                const badgeHTML = isOwned 
+                    ? `<div class="ownership-badge owned-yes">✔</div>` 
+                    : `<div class="ownership-badge owned-no">✖</div>`;
+
+                const cardBackImg = "https://world.onepiece-cardgame.com/images/common/cardback.png";
+
+                div.innerHTML = `
+                    ${badgeHTML} <img class="card-img" src="${img ? img : cardBackImg}" alt="${cleanName}" onerror="this.src='${cardBackImg}';">
+                    <div class="card-info" style="font-size: 0.8em;">
+                        <strong>${cardNumber}</strong><br>
+                        <span>${cleanName}</span>
+                    </div>
+                    <button style="background: #2c3e50; color: white; border: none; padding: 5px; width: 100%; border-radius: 5px; margin-top: 5px; cursor: pointer;">
+                        Kiválaszt
+                    </button>
+                `;
+                display.appendChild(div);
+            });
+        } catch (e) {
+            display.innerHTML = "Error during card fetch";
+        }
     }
 
     window.onload = loadSources;

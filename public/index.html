@@ -14,10 +14,18 @@
   <div class="container">
     <h1>One Piece TCG - Collection Curator</h1>
     
-    <div style="text-align: center; margin-bottom: 20px;">
-      <button onclick="loadMyCollection()" class="collection-btn"
-              style="background-color: #27ae60; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s;">
-              View My Collection
+    <div style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px;">
+      <button onclick="location.reload()" 
+              style="background-color: #34495e; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+              Home
+      </button>
+      <button onclick="loadMyCollection()" 
+              style="background-color: #27ae60; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+              My Collection
+      </button>
+      <button onclick="openDeckbuilder()" 
+              style="background-color: #9b59b6; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+              Deckbuilder
       </button>
     </div>
 
@@ -56,6 +64,46 @@
     
     <div id="cards-display" class="cards-display"></div>
   </div>
+
+  <div id="deckbuilder-container" style="display: none; margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="margin: 0;">Deckbuilder</h2>
+            <div>
+                <input type="text" id="deckNameInput" class="search-box" placeholder="A pakli neve..." style="width: 250px; margin-right: 10px;">
+                <button onclick="saveDeck()" style="background-color: #f39c12; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer;">💾 Pakli Mentése</button>
+            </div>
+        </div>
+
+       <div class="db-left-panel">
+                <h3 style="text-align: center; color: #2c3e50; margin-bottom: 10px;">Available Cards</h3>
+                
+                <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                    <input list="main-sets-list" class="search-box" 
+                           onchange="loadCardsForDeckbuilder(setIdMap[this.value] || this.value)" 
+                           placeholder="Search in set..." style="flex: 1;">
+                    <input list="starter-decks-list" class="search-box" 
+                           onchange="loadCardsForDeckbuilder(setIdMap[this.value] || this.value)" 
+                           placeholder="Search in starters..." style="flex: 1;">
+                </div>
+
+                <div id="db-cards-display" class="cards-display" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"></div>
+            </div>
+
+            <div class="db-right-panel">
+                <div class="deck-stats">
+                    <h3 style="margin: 0;">Current Deck</h3>
+                    <span id="deck-count" style="font-size: 1.2em; font-weight: bold; color: #e74c3c;">0 / 50</span>
+                </div>
+                
+                <div class="leader-slot" id="leader-slot">
+                    <p style="color: #7f8c8d; text-align: center; margin-top: 40px;">Choose a Leader!</p>
+                </div>
+
+                <div class="deck-list" id="deck-list">
+                    </div>
+            </div>
+        </div>
+    </div>
 
   <script src="/js/app.js"></script>
 </body>

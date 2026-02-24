@@ -115,4 +115,20 @@ router.post('/collection/remove', async (req, res) => {
   }
 });
 
+router.get('/collection/check', async (req, res) => {
+  try{
+    const myCards = await req.db.all('SELECT card_id, quantity FROM my_collection');
+
+    const collectionMap = {};
+    myCards.forEach(card => {
+      collectionMap[card.card_id] = card.quantity;
+    });
+
+    res.json(collectionMap);
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Error while checking collection."});
+  }
+});
+
 module.exports = router;
