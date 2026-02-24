@@ -83,7 +83,7 @@ router.post("/collection/add", async (req, res) => {
   }
 });
 
-router.get('/collcetion/view', async (req, res) => {
+router.get('/collection/view', async (req, res) => {
     try{
         const myCard = await req.db.all('SELECT * FROM my_collection ORDER BY card_id ASC');
         res.json(myCard);
@@ -91,6 +91,28 @@ router.get('/collcetion/view', async (req, res) => {
         console.error("Datadbase error:", error);
         res.status(500).json({ error: "Error during loading the collection."});
     }
+});
+
+router.post('/collection/remove', async (req, res) => {
+  const { card_id } = req.body;
+  try{
+    const existing = await req.db.get("SELECT * FROM my_collection WHERE card_id = ?", [card_id]);
+
+    if (existing) {
+      if (existing.quantity > 1) {
+        //if there is more than 1 just remove 1
+        await req.db.run("UPDATE my_collection SET quantity = quantity - 1 WHERE card_id = ?", [card_id]);
+      } else {
+        await req.db.run("DELETE FROM my_collection WHERE card_id = ?", [card_id]);
+      }
+      res.json({ success: true, message: "Card removed"});
+    } else {
+      res.status(404).json({ error: "Card not found in collection."});
+    }
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({error: "Error during removal."});
+  }
 });
 
 module.exports = router;

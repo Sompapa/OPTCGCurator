@@ -128,7 +128,7 @@
             <h3 style="color: #34495e; margin-bottom: 10px;">Main Sets</h3>
             <input list="main-sets-list" id="mainSetInput" 
                    onchange="handleDropdownSelect(this.value, 'starterDeckInput')" 
-                   placeholder="Keresés szettre (pl. Romance)..." 
+                   placeholder="Search for set (ex. Romance)..." 
                    style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #bdc3c7; font-size: 16px; outline: none; box-sizing: border-box;">
             <datalist id="main-sets-list"></datalist>
         </div>
@@ -137,14 +137,14 @@
             <h3 style="color: #34495e; margin-bottom: 10px;">Starter Decks</h3>
             <input list="starter-decks-list" id="starterDeckInput" 
                    onchange="handleDropdownSelect(this.value, 'mainSetInput')" 
-                   placeholder="Keresés deckre (pl. Luffy)..." 
+                   placeholder="Search for starter (ex. st01)..." 
                    style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #bdc3c7; font-size: 16px; outline: none; box-sizing: border-box;">
             <datalist id="starter-decks-list"></datalist>
         </div>
 
       </div>
     <div id="search-container" style="display: none; margin-bottom: 20px; text-align: center;">
-      <input type="text" id="searchInput" oninput="filterCards()" placeholder="Keresés név vagy ID alapján..."
+      <input type="text" id="searchInput" oninput="filterCards()" placeholder="Search with name of ID..."
         style="width: 100%; max-width: 400px; padding: 12px; border-radius: 8px; border: 2px solid #3498db; font-size: 16px; outline: none;">
 
       <select id="sortSelect" onchange="sortCards()"
@@ -173,9 +173,9 @@
 
       async function loadSources() {
         try {
-          console.log("Források lekérése...");
+          console.log("Leading sources...");
           const response = await fetch("/api/all-sources");
-          if (!response.ok) throw new Error("API hiba történt!");
+          if (!response.ok) throw new Error("API error!");
           
           const data = await response.json();
           
@@ -204,8 +204,8 @@
             });
           }
         } catch (e) {
-          console.error("Hiba a betöltéskor:", e);
-          alert("Hiba az adatok lekérésekor. Ellenőrizd a szervert!");
+          console.error("Error during load:", e);
+          alert("Error during data fetch. Check the server!");
         }
       }
 
@@ -312,13 +312,31 @@
           }),
         });
         const result = await response.json();
-        if (result.success) alert("Kártya elmentve!");
+        if (result.success) alert("Card is added to the collection!");
       } catch (e) {
-        alert("Hiba a mentés során!");
+        alert("Error during save!");
       }
     }
 
-    // 5. My Collection megjelenítése
+    async function removeFromCollection(id) {
+        try {
+            const response = await fetch("/api/collection/remove", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ card_id: id }),
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                // Refresh after remval
+                loadMyCollection();
+            }
+        } catch (e) {
+            alert("Error during the delet!");
+        }
+    }
+
+    // 5. My Collection
       async function loadMyCollection() {
         const display = document.getElementById('cards-display');
         const title = document.getElementById('current-set-title');
@@ -327,7 +345,7 @@
 
         title.innerText = "Loading My Collection...";
         display.innerHTML = 'Reading database...';
-        searchContainer.style.display = "none"; // Elrejtjük a keresőt amíg tölt
+        searchContainer.style.display = "none";
 
         try {
             const response = await fetch("/api/collection/view");
@@ -335,7 +353,7 @@
             display.innerHTML = '';
 
             if (myCards.length === 0) {
-                display.innerHTML = "<p style='text-align:center; width: 100%; font-size: 18px;'>A gyűjteményed még üres. Keress egy szettet és adj hozzá kártyákat!</p>";
+                display.innerHTML = "<p style='text-align:center; width: 100%; font-size: 18px;'>Your collection is empty, search for crads to add them!</p>";
                 title.innerText = "My Collection (0)";
                 return;
             }
@@ -349,7 +367,7 @@
                 const img = card.image_url;
                 const quantity = card.quantity;
 
-                div.innerHTML = `
+             div.innerHTML = `
                     <img class="card-img" 
                          src="${img}" 
                          alt="${cleanName}" 
@@ -358,8 +376,17 @@
                         <strong>${cardNumber}</strong><br>
                         <span>${cleanName}</span>
                     </div>
-                    <div style="margin-top: 10px; width: 100%; background: #f39c12; color: white; text-align: center; padding: 8px 0; border-radius: 5px; font-weight: bold;">
-                        Owned: ${quantity}x
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; width: 100%; gap: 5px;">
+                        <div style="background: #f39c12; color: white; padding: 8px; border-radius: 5px; font-weight: bold; flex-grow: 1; text-align: center;">
+                            Owned: ${quantity}x
+                        </div>
+                        <button onclick="removeFromCollection('${cardNumber}')" 
+                                style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s;"
+                                onmouseover="this.style.background='#c0392b'" 
+                                onmouseout="this.style.background='#e74c3c'">
+                            -1
+                        </button>
                     </div>
                 `;
                 display.appendChild(div);
