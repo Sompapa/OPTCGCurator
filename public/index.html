@@ -6,51 +6,41 @@
   <title>One Piece TCG Manager</title>
   
   <link rel="icon" type="image/png" href="https://world.onepiece-cardgame.com/images/common/cardback.png">
-  
   <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
+  <nav class="top-navbar">
+    <div class="nav-left">
+      <button id="homeBtn" class="nav-btn home-btn" onclick="goHome()" style="display: none;">
+        Home
+      </button>
+
+      <div class="nav-search-group">
+        <input list="main-sets-list" id="mainSetInput" class="search-box nav-search" 
+               onchange="handleDropdownSelect(this.value, 'starterDeckInput')" 
+               placeholder="Szettek (pl. Romance)..." >
+        <datalist id="main-sets-list"></datalist>
+
+        <input list="starter-decks-list" id="starterDeckInput" class="search-box nav-search" 
+               onchange="handleDropdownSelect(this.value, 'mainSetInput')" 
+               placeholder="Deckek (pl. Luffy)..." >
+        <datalist id="starter-decks-list"></datalist>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <button onclick="loadMyCollection()" class="nav-btn collection-btn">📖 My Collection</button>
+      <button onclick="openDeckbuilder()" class="nav-btn deckbuilder-btn">⚔️ Deckbuilder</button>
+    </div>
+  </nav>
+
   <div class="container">
     <h1>One Piece TCG - Collection Curator</h1>
     
-    <div style="text-align: center; margin-bottom: 20px; display: flex; justify-content: center; gap: 15px;">
-      <button onclick="location.reload()" 
-              style="background-color: #34495e; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s;">
-              Home
-      </button>
-      <button onclick="loadMyCollection()" 
-              style="background-color: #27ae60; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s;">
-              My Collection
-      </button>
-      <button onclick="openDeckbuilder()" 
-              style="background-color: #9b59b6; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s;">
-              Deckbuilder
-      </button>
-    </div>
-
-  <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 250px; max-width: 400px;">
-            <h3 style="color: #34495e; margin-bottom: 10px;">Main Sets</h3>
-            <input list="main-sets-list" id="mainSetInput" class="search-box"
-                   onchange="handleDropdownSelect(this.value, 'starterDeckInput')" 
-                   placeholder="Search for set (ex. OP01)..." >
-            <datalist id="main-sets-list"></datalist>
-        </div>
-
-        <div style="flex: 1; min-width: 250px; max-width: 400px;">
-            <h3 style="color: #34495e; margin-bottom: 10px;">Starter Decks</h3>
-            <input list="starter-decks-list" id="starterDeckInput" class="search-box"
-                   onchange="handleDropdownSelect(this.value, 'mainSetInput')" 
-                   placeholder="Search for starter (ex. ST01)..." >
-            <datalist id="starter-decks-list"></datalist>
-        </div>
-    </div>
-
     <div id="search-container" style="display: none; margin-bottom: 20px; text-align: center;">
-      <input type="text" id="searchInput" oninput="filterCards()" placeholder="Keresés név vagy ID alapján..."
-        style="width: 100%; max-width: 400px; padding: 12px; border-radius: 8px; border: 2px solid #3498db; font-size: 16px; outline: none;">
-
+      <input type="text" id="searchInput" class="search-box" style="max-width: 400px;" 
+             oninput="filterCards()" placeholder="Keresés név vagy ID alapján...">
       <select id="sortSelect" onchange="sortCards()"
         style="padding: 12px; border-radius: 8px; border: 2px solid #2c3e50; font-size: 16px; outline: none; margin-left: 10px; cursor: pointer;">
         <option value="id_asc">Sort by ID (increasing)</option>
@@ -61,11 +51,9 @@
     </div>
 
     <h2 id="current-set-title">Choose a set!</h2>
-    
     <div id="cards-display" class="cards-display"></div>
-  </div>
 
-  <div id="deckbuilder-container" style="display: none; margin-top: 20px;">
+    <div id="deckbuilder-container" style="display: none; margin-top: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h2 style="margin: 0;">Deckbuilder</h2>
             <div>
@@ -74,7 +62,9 @@
             </div>
         </div>
 
-       <div class="db-left-panel">
+        <div class="deckbuilder-layout">
+            
+            <div class="db-left-panel">
                 <h3 style="text-align: center; color: #2c3e50; margin-bottom: 10px;">Available Cards</h3>
                 
                 <div style="margin-bottom: 15px; display: flex; gap: 10px;">
@@ -90,6 +80,11 @@
             </div>
 
             <div class="db-right-panel">
+              <div style="margin-bottom: 15px; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 2px dashed #bdc3c7;">
+                    <h4 style="margin-top: 0; margin-bottom: 8px; color: #2c3e50; font-size: 14px;">📥 Import from TopDecks</h4>
+                    <textarea id="importInput" rows="2" style="width: 100%; box-sizing: border-box; border-radius: 5px; border: 1px solid #ccc; padding: 8px; font-size: 12px; resize: vertical;" placeholder='["Exported from...", "OP13-079", ...]'></textarea>
+                    <button onclick="importTopDecks()" style="width: 100%; margin-top: 8px; background: #3498db; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s;">Pakli Betöltése</button>
+                </div>
                 <div class="deck-stats">
                     <h3 style="margin: 0;">Current Deck</h3>
                     <span id="deck-count" style="font-size: 1.2em; font-weight: bold; color: #e74c3c;">0 / 50</span>
@@ -99,13 +94,10 @@
                     <p style="color: #7f8c8d; text-align: center; margin-top: 40px;">Choose a Leader!</p>
                 </div>
 
-                <div class="deck-list" id="deck-list">
-                    </div>
+                <div class="deck-list" id="deck-list"></div>
             </div>
-        </div>
-    </div>
 
-  <script src="/js/app.js"></script>
+        </div> </div> </div> <script src="/js/app.js"></script>
 </body>
 
 </html>

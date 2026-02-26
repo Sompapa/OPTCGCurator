@@ -30,6 +30,7 @@ router.get("/all-sources", async (req, res) => {
 });
 
 // Cards for a set
+// Cards for a set
 router.get("/view/:id", async (req, res) => {
   const id = req.params.id.trim().toUpperCase();
   try {
@@ -40,12 +41,25 @@ router.get("/view/:id", async (req, res) => {
     console.log(`Fetching cards from: ${url}`);
     const response = await axios.get(url);
 
-    if (!response.data || response.data.length === 0) {
+    let cardsData = response.data;
+
+    if (!cardsData || cardsData.length === 0) {
       return res
         .status(404)
         .json({ error: "The list is empty or can not be found." });
     }
-    res.json(response.data);
+
+    // --- ÚJ: Optcgapi "Fordító" a Pakliépítőhöz ---
+    const mappedCards = cardsData.map(card => ({
+        card_id: card.id || card.card_id,
+        card_name: card.name || card.card_name,
+        image_url: card.image || card.image_url || "",
+        card_color: card.color || "",            // Optcgapi a 'color' mezőt használja
+        card_category: card.type || "Unknown",   // Optcgapi a 'type' mezőt használja (Leader, Event, stb.)
+    }));
+
+    res.json({ cards: mappedCards }); // Így már a megfelelő formátumban megy a böngészőnek!
+
   } catch (error) {
     console.error(
       `Error (${id}):`,
